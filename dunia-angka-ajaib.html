@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dunia Angka Ajaib - Game Belajar Angka Anak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3b2a6b; --muted:#6b5f8f;
+    --yellow:#ffd93d; --amber:#f59e0b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"Fredoka","Nunito","Trebuchet MS",system-ui,sans-serif;color:var(--ink);
+    background:linear-gradient(180deg,#7dd3fc 0%,#bae6fd 32%,#fef3c7 68%,#fbcfe8 100%);
+    min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden;
+    user-select:none;-webkit-user-select:none;touch-action:manipulation;
+  }
+  button{font-family:inherit;cursor:pointer;border:none}
+  .hidden{display:none!important}
+
+  /* ===== latar: matahari, awan, bukit ===== */
+  .scene{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .sun{position:absolute;top:84px;right:7%;width:84px;height:84px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#fffbd0,#ffd93d 55%,#ffb703);
+    box-shadow:0 0 0 12px rgba(255,217,61,.28),0 0 70px 24px rgba(255,217,61,.45);animation:sunpulse 5s ease-in-out infinite}
+  @keyframes sunpulse{50%{transform:scale(1.07);box-shadow:0 0 0 18px rgba(255,217,61,.2),0 0 90px 30px rgba(255,217,61,.5)}}
+  .cloud{position:absolute;height:34px;background:#fff;border-radius:999px;opacity:.92;animation:cloudmove linear infinite}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+  .cloud::before{width:44%;height:170%;left:14%;top:-80%}
+  .cloud::after{width:34%;height:135%;right:16%;top:-50%}
+  @keyframes cloudmove{from{transform:translateX(-35vw)}to{transform:translateX(135vw)}}
+  .hills{position:absolute;bottom:0;left:0;width:100%;height:20vh;min-height:110px}
+  .sparkle{position:absolute;font-size:22px;animation:twinkle 3s ease-in-out infinite;opacity:.8}
+  @keyframes twinkle{0%,100%{transform:scale(.6) rotate(0);opacity:.2}50%{transform:scale(1.15) rotate(25deg);opacity:.95}}
+
+  /* ===== header ===== */
+  header{position:relative;z-index:5;display:flex;align-items:center;gap:10px;max-width:960px;margin:0 auto;width:100%;padding:12px 14px}
+  .hbtn{background:#fff;border-radius:20px;padding:9px 16px;font-size:clamp(16px,4vw,20px);font-weight:600;color:var(--ink);
+    box-shadow:0 5px 0 #d9c9ff,0 8px 14px rgba(0,0,0,.12);display:flex;align-items:center;gap:6px;transition:transform .1s}
+  .hbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #d9c9ff}
+  .stars{margin-left:auto;display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:999px;font-weight:700;
+    font-size:clamp(18px,4.6vw,26px);color:#7a4a00;background:linear-gradient(180deg,#ffe770,#ffc533);
+    box-shadow:0 5px 0 #e0a000,0 8px 14px rgba(0,0,0,.14),inset 0 3px 0 rgba(255,255,255,.55)}
+  .stars small{font-size:.5em;font-weight:600;opacity:.75;text-transform:uppercase;letter-spacing:.06em}
+  .stars .ico{display:inline-block;filter:drop-shadow(0 2px 0 rgba(0,0,0,.15));animation:spinstar 4s linear infinite}
+  .stars.bump{animation:bump .5s}
+  @keyframes spinstar{0%,100%{transform:rotate(-10deg) scale(1)}50%{transform:rotate(10deg) scale(1.15)}}
+  @keyframes bump{30%{transform:scale(1.25) rotate(-4deg)}60%{transform:scale(.95)}}
+
+  /* ===== layar ===== */
+  main{flex:1;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;padding:8px 12px 24px}
+  .screen{display:none;width:100%;max-width:880px}
+  .screen.active{display:block;animation:screenin .5s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes screenin{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+
+  .panel{
+    background:rgba(255,255,255,.93);border:5px solid var(--bd,#fcd34d);border-radius:44px;
+    padding:clamp(16px,3.4vw,34px);display:grid;gap:clamp(12px,2.4vw,20px);text-align:center;
+    box-shadow:0 22px 44px rgba(60,40,120,.2),0 0 0 8px rgba(255,255,255,.55);position:relative;
+  }
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .tag{background:var(--tagbg,#fef3c7);color:var(--tagfg,#7a4a00);font-weight:600;padding:5px 16px;border-radius:999px;font-size:clamp(13px,3.4vw,16px)}
+  .chip{background:var(--chipbg,#fde68a);color:var(--chipfg,#7a4a00);font-weight:600;padding:9px 16px;border-radius:999px;font-size:clamp(14px,3.6vw,17px);
+    box-shadow:0 4px 0 rgba(0,0,0,.12);transition:transform .1s}
+  .chip:active{transform:translateY(3px);box-shadow:none}
+  h2.q{margin:0;font-size:clamp(22px,5.6vw,36px);line-height:1.2}
+  .hint{margin:0;color:var(--muted);font-weight:500;font-size:clamp(15px,3.8vw,20px)}
+
+  /* ===== menu ===== */
+  .menu-head{text-align:center;margin-bottom:18px}
+  .badge-top{display:inline-block;background:linear-gradient(135deg,#a66bff,#ff6fae);color:#fff;font-weight:600;font-size:clamp(12px,3vw,15px);
+    letter-spacing:.08em;text-transform:uppercase;padding:6px 18px;border-radius:999px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+  h1{margin:10px 0 6px;font-size:clamp(32px,8.4vw,60px);line-height:1.05;font-weight:700;color:#fff;
+    text-shadow:0 4px 0 #7b45d6,0 8px 0 rgba(0,0,0,.12),0 0 22px rgba(123,69,214,.35)}
+  h1 .em{display:inline-block;animation:floaty 3s ease-in-out infinite;margin:0 4px;font-size:.8em}
+  h1 .em:last-child{animation-delay:-1.5s}
+  .menu-head p{margin:0 auto;max-width:520px;font-weight:600;color:#4a3a85;font-size:clamp(15px,3.8vw,20px);text-shadow:0 1px 0 rgba(255,255,255,.7)}
+  .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:18px;padding:6px 4px 14px}
+  .mcard{
+    position:relative;overflow:hidden;border-radius:34px;padding:20px 20px 22px;text-align:left;color:#fff;min-height:158px;
+    background:linear-gradient(135deg,var(--a),var(--b));border:5px solid #fff;
+    box-shadow:0 10px 0 var(--d),0 20px 28px rgba(0,0,0,.18);
+    transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .18s;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .mcard::before{content:"";position:absolute;right:-34px;bottom:-34px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.2)}
+  .mcard::after{content:"";position:absolute;left:-20px;top:-22px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.14)}
+  .mcard:hover{transform:translateY(-8px) rotate(-.8deg)}
+  .mcard:active{transform:translateY(5px);box-shadow:0 4px 0 var(--d),0 8px 14px rgba(0,0,0,.18)}
+  .mcard .top{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+  .mcard .ico{width:50px;height:50px;border-radius:18px;background:rgba(255,255,255,.3);display:grid;place-items:center;font-size:24px;font-weight:700;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
+  .mcard .pill{background:rgba(255,255,255,.32);font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px}
+  .mcard h3{margin:14px 0 2px;font-size:clamp(21px,5vw,26px);position:relative;z-index:1;text-shadow:0 2px 0 rgba(0,0,0,.14)}
+  .mcard p{margin:0;font-size:14px;font-weight:500;opacity:.95;position:relative;z-index:1;max-width:72%}
+  .mcard .em{position:absolute;right:12px;bottom:6px;font-size:68px;z-index:1;animation:floaty 3.4s ease-in-out infinite;filter:drop-shadow(0 6px 4px rgba(0,0,0,.2))}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(4deg)}}
+
+  /* ===== belajar ===== */
+  .numrow{display:flex;align-items:center;justify-content:center;gap:clamp(14px,4vw,34px);flex-wrap:wrap}
+  .numtile{
+    position:relative;width:clamp(110px,26vw,160px);height:clamp(110px,26vw,160px);border-radius:38% 42% 40% 44% / 42% 38% 44% 40%;
+    display:grid;place-items:center;font-size:clamp(66px,16vw,100px);font-weight:700;color:#fff;cursor:pointer;
+    background:linear-gradient(160deg,#ffe066,#ffb703 60%,#fb8500);
+    box-shadow:0 10px 0 #d97706,0 20px 26px rgba(0,0,0,.2),inset 0 6px 0 rgba(255,255,255,.45);
+    text-shadow:0 5px 0 rgba(0,0,0,.18);animation:pop .55s cubic-bezier(.3,1.7,.5,1);transition:transform .12s;
+  }
+  .numtile::before{content:"";position:absolute;top:12%;left:14%;width:26%;height:14%;background:rgba(255,255,255,.55);border-radius:50%;transform:rotate(-30deg)}
+  .numtile:active{transform:scale(.93)}
+  .bigword{margin:0;font-size:clamp(40px,10vw,64px);font-weight:700;color:#7a3f00;line-height:1}
+  .objbox{
+    min-height:170px;border-radius:30px;padding:18px;display:flex;flex-wrap:wrap;gap:clamp(10px,2.4vw,18px);align-items:center;justify-content:center;
+    background:repeating-linear-gradient(45deg,#fffbeb,#fffbeb 14px,#fff7d6 14px,#fff7d6 28px);border:3px dashed #fcd34d;
+  }
+  .fruit{
+    position:relative;width:clamp(62px,16vw,86px);height:clamp(62px,16vw,86px);border-radius:44% 56% 50% 50% / 52% 46% 54% 48%;
+    background:radial-gradient(circle at 30% 25%,#fff,#fff4d6);font-size:clamp(34px,9vw,48px);
+    display:grid;place-items:center;box-shadow:0 6px 0 #f3d58a,0 12px 16px rgba(0,0,0,.14);
+    animation:pop .5s cubic-bezier(.3,1.7,.5,1) backwards;transition:transform .15s,background .2s;
+  }
+  .fruit .f{display:block;animation:floaty 3s ease-in-out infinite}
+  .fruit:active{transform:scale(.88)}
+  .fruit .badge{position:absolute;top:-8px;right:-8px;min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:linear-gradient(180deg,#ff8a5c,#ff4d6d);
+    color:#fff;font-weight:700;font-size:17px;display:none;place-items:center;border:3px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .fruit.counted{background:radial-gradient(circle at 30% 25%,#fff,#d9f99d);box-shadow:0 6px 0 #a3d65a,0 12px 16px rgba(0,0,0,.14)}
+  .fruit.counted .badge{display:grid;animation:pop .4s cubic-bezier(.3,1.9,.5,1)}
+  .fruit.wiggle{animation:wiggle .4s}
+  .navrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .navbtn{color:#fff;font-weight:700;font-size:clamp(16px,4vw,20px);padding:12px 22px;border-radius:999px;box-shadow:0 6px 0 var(--sh),0 10px 14px rgba(0,0,0,.15),inset 0 3px 0 rgba(255,255,255,.35);
+    background:linear-gradient(180deg,var(--c1),var(--c2));text-shadow:0 2px 0 rgba(0,0,0,.15);transition:transform .1s}
+  .navbtn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--sh)}
+  .navbtn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:0 6px 0 var(--sh)}
+  .navbtn.sky{--c1:#7dd3fc;--c2:#0ea5e9;--sh:#0b7bb5}
+  .navbtn.mint{--c1:#6ee7b7;--c2:#10b981;--sh:#0a8a62}
+  .navbtn.gray{--c1:#e2e8f0;--c2:#cbd5e1;--sh:#94a3b8;color:#475569;text-shadow:none}
+  .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex:1 1 auto}
+  @media(max-width:560px){
+    .navrow{display:grid;grid-template-columns:1fr 1fr}
+    .navrow .dots{grid-column:1/-1;order:-1}
+    .navrow .navbtn{padding:12px 10px}
+  }
+  .dotb{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--muted);font-weight:700;font-size:13px;box-shadow:0 3px 0 #e5dbff;transition:transform .15s}
+  .dotb.on{background:linear-gradient(180deg,#ffd166,#f59e0b);color:#fff;transform:scale(1.2);box-shadow:0 3px 0 #c97d00}
+
+  /* ===== hitung ===== */
+  .itembox{min-height:190px;border-radius:30px;padding:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 20% 20%,#f0f9ff,#e0f2fe);border:3px solid #bae6fd}
+  .item{width:clamp(54px,13vw,74px);height:clamp(54px,13vw,74px);border-radius:46% 54% 48% 52% / 52% 46% 54% 48%;background:#fff;font-size:clamp(30px,7.6vw,42px);
+    display:grid;place-items:center;box-shadow:0 5px 0 #bfe3f7,0 10px 12px rgba(0,0,0,.1);animation:pop .5s cubic-bezier(.3,1.7,.5,1) backwards}
+  .item span{display:block;animation:floaty 2.6s ease-in-out infinite}
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,3vw,18px);max-width:460px;margin:0 auto;width:100%}
+  .opt{
+    aspect-ratio:1/.92;border-radius:34% 40% 38% 36% / 38% 34% 40% 36%;font-size:clamp(38px,10vw,56px);font-weight:700;color:#7a3f00;
+    background:linear-gradient(180deg,#ffe58a,#ffbf1f);box-shadow:0 8px 0 #d99500,0 14px 18px rgba(0,0,0,.16),inset 0 4px 0 rgba(255,255,255,.5);
+    transition:transform .12s;
+  }
+  .opt:active{transform:translateY(6px);box-shadow:0 2px 0 #d99500}
+  .opt.wrong{animation:shake .45s;background:linear-gradient(180deg,#fecaca,#fb7185);color:#7f1d1d}
+  .opt.right{background:linear-gradient(180deg,#86efac,#22c55e);color:#064e2a;animation:pop .4s}
+
+  /* ===== balon ===== */
+  .target{font-size:clamp(56px,14vw,88px);font-weight:700;line-height:1;color:#059669;text-shadow:0 5px 0 #bbf7d0;display:inline-block;animation:pop .5s cubic-bezier(.3,1.7,.5,1)}
+  .balloons{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(8px,2vw,18px);min-height:250px;align-items:end;padding:6px 4px 0}
+  @media(min-width:640px){.balloons{grid-template-columns:repeat(4,1fr)}}
+  .balloon{background:none;padding:0;position:relative;animation:sway 3.4s ease-in-out infinite;transform-origin:50% 100%;transition:transform .2s}
+  .balloon:nth-child(2n){animation-duration:4.1s;animation-delay:-1s}
+  .balloon:nth-child(3n){animation-duration:3.8s;animation-delay:-2s}
+  .balloon:active{transform:scale(.92)}
+  .balloon svg{display:block;width:100%;max-width:150px;margin:0 auto;filter:drop-shadow(0 10px 8px rgba(0,0,0,.18))}
+  .balloon.popped{animation:none;transform:scale(1.5);opacity:0;transition:transform .22s ease-out,opacity .22s}
+  .balloon.wrong{animation:shake .45s}
+  @keyframes sway{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(3deg)}}
+
+  /* ===== urutkan ===== */
+  .slots{display:flex;gap:clamp(8px,2.4vw,16px);justify-content:center;flex-wrap:wrap;padding:16px;border-radius:30px;background:#eef2ff;border:3px solid #c7d2fe}
+  .slot{width:clamp(60px,15vw,84px);height:clamp(60px,15vw,84px);border-radius:26px;display:grid;place-items:center;font-size:clamp(32px,8vw,44px);font-weight:700;
+    border:4px dashed #a5b4fc;color:#c7d2fe;background:#fff;transition:all .2s}
+  .slot.filled{border:4px solid #fff;color:#fff;background:linear-gradient(160deg,#818cf8,#6366f1);box-shadow:0 6px 0 #4338ca,0 10px 12px rgba(0,0,0,.14);animation:pop .4s cubic-bezier(.3,1.8,.5,1)}
+  .sources{display:flex;gap:clamp(10px,3vw,18px);justify-content:center;flex-wrap:wrap;min-height:84px}
+  .src{width:clamp(60px,15vw,84px);height:clamp(60px,15vw,84px);border-radius:34% 40% 36% 38% / 38% 34% 40% 36%;font-size:clamp(32px,8vw,44px);font-weight:700;color:#fff;
+    background:linear-gradient(160deg,#c084fc,#7c3aed);box-shadow:0 7px 0 #5b21b6,0 12px 14px rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.35);text-shadow:0 3px 0 rgba(0,0,0,.2);
+    animation:pop .45s cubic-bezier(.3,1.7,.5,1) backwards;transition:transform .12s}
+  .src:active{transform:translateY(5px);box-shadow:0 2px 0 #5b21b6}
+  .src.wrong{animation:shake .45s}
+
+  /* ===== stiker ===== */
+  .stickers{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:14px;padding:4px;max-height:60vh;overflow-y:auto}
+  .sticker{border-radius:30px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;background:#f1f5f9;border:4px solid #e2e8f0}
+  .sticker.own{background:linear-gradient(180deg,#fef9c3,#fde68a);border-color:#fcd34d;box-shadow:0 6px 0 #e0b02a}
+  .sticker .e{font-size:clamp(48px,12vw,64px);position:relative}
+  .sticker.own .e{animation:floaty 3s ease-in-out infinite;filter:drop-shadow(0 6px 4px rgba(0,0,0,.18))}
+  .sticker:not(.own) .e{filter:grayscale(1) brightness(.9);opacity:.45}
+  .sticker:not(.own) .e::after{content:"🔒";position:absolute;right:-8px;bottom:-4px;font-size:.45em;filter:none;opacity:1}
+  .sticker .n{font-weight:700;font-size:15px}
+  .sticker .c{font-size:13px;font-weight:600;color:var(--muted)}
+  .buy{width:100%;color:#fff;font-weight:700;font-size:14px;padding:8px 10px;border-radius:14px;background:linear-gradient(180deg,#6ee7b7,#10b981);box-shadow:0 4px 0 #0a8a62}
+  .buy:disabled{background:#cbd5e1;box-shadow:0 4px 0 #94a3b8;cursor:not-allowed}
+  .buy:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+  .own-tag{background:#fbbf24;color:#5a3600;font-weight:700;font-size:12px;padding:3px 12px;border-radius:999px}
+
+  /* ===== modal ===== */
+  .modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(40,20,90,.55);backdrop-filter:blur(4px)}
+  .modal.show{display:flex;animation:fade .25s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .mbox{background:#fff;border:6px solid var(--yellow);border-radius:44px;padding:28px 24px;max-width:380px;width:100%;text-align:center;display:grid;gap:12px;
+    box-shadow:0 30px 60px rgba(0,0,0,.35);animation:pop .5s cubic-bezier(.3,1.7,.5,1)}
+  .mbox .big{font-size:76px;line-height:1;animation:floaty 1.6s ease-in-out infinite}
+  .mbox h3{margin:0;font-size:36px;color:#7a3f00}
+  .mbox p{margin:0;font-weight:600;font-size:19px;color:var(--muted)}
+  .plus{display:flex;justify-content:center;align-items:center;gap:8px;font-size:30px;font-weight:700;color:#d97706}
+  .plus span:first-child{animation:spinstar 1.2s ease-in-out infinite;display:inline-block}
+  .go{color:#fff;font-weight:700;font-size:22px;padding:14px;border-radius:22px;background:linear-gradient(180deg,#ffd34d,#f59e0b);box-shadow:0 7px 0 #c97d00,0 12px 16px rgba(0,0,0,.18);text-shadow:0 2px 0 rgba(0,0,0,.15)}
+  .go:active{transform:translateY(5px);box-shadow:0 2px 0 #c97d00}
+
+  /* ===== efek ===== */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:60;width:100%;height:100%}
+  .fx{position:fixed;z-index:70;pointer-events:none;font-size:24px;animation:fx .8s ease-out forwards}
+  @keyframes fx{from{transform:translate(0,0) scale(.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(200deg);opacity:0}}
+  @keyframes pop{from{transform:scale(0) rotate(-20deg);opacity:0}70%{transform:scale(1.12) rotate(3deg);opacity:1}to{transform:scale(1) rotate(0)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-3deg)}40%{transform:translateX(10px) rotate(3deg)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+  @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.08)}75%{transform:rotate(12deg) scale(1.08)}}
+
+  footer{position:relative;z-index:3;text-align:center;padding:8px 12px 14px;font-weight:600;font-size:13px;color:#4a3a85}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- latar -->
+<div class="scene" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud" style="top:14%;width:120px;animation-duration:60s;animation-delay:-10s"></div>
+  <div class="cloud" style="top:30%;width:84px;animation-duration:80s;animation-delay:-45s;opacity:.75"></div>
+  <div class="cloud" style="top:6%;width:100px;animation-duration:70s;animation-delay:-30s;opacity:.85"></div>
+  <div class="sparkle" style="top:22%;left:8%">✨</div>
+  <div class="sparkle" style="top:46%;right:6%;animation-delay:-1.2s">⭐</div>
+  <div class="sparkle" style="top:62%;left:4%;animation-delay:-2.1s">✨</div>
+  <svg class="hills" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0 120 C180 40 340 60 520 110 C700 160 860 60 1060 80 C1220 96 1340 60 1440 90 L1440 200 L0 200Z" fill="#a7f3d0"/>
+    <path d="M0 150 C200 100 380 130 560 150 C760 172 940 110 1140 130 C1280 144 1380 130 1440 140 L1440 200 L0 200Z" fill="#6ee7b7"/>
+  </svg>
+</div>
+
+<header>
+  <button id="btn-home" class="hbtn hidden" onclick="showScreen('screen-menu')">🏠 <span>Menu</span></button>
+  <div class="stars" id="stars-pill"><span class="ico">⭐</span><span id="star-count">0</span><small>Bintang</small></div>
+  <button id="btn-sound" class="hbtn" onclick="toggleSound()" aria-label="Suara"><span id="sound-icon">🔊</span></button>
+</header>
+
+<main>
+
+  <!-- MENU -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-head">
+      <span class="badge-top">Game Edukasi Anak Usia Dini</span>
+      <h1><span class="em">🎈</span> Dunia Angka Ajaib <span class="em">🌟</span></h1>
+      <p>Yuk, belajar dan bermain bersama angka-angka lucu! Pilih permainanmu:</p>
+    </div>
+    <div class="menu-grid">
+      <button class="mcard" style="--a:#fb7185;--b:#ec4899;--d:#be185d" onclick="startBelajar()">
+        <div class="top"><div class="ico">123</div><span class="pill">Belajar dasar</span></div>
+        <div><h3>1. Mengenal Angka</h3><p>Lihat angka, suara, dan hitung buah lucu!</p></div>
+        <div class="em">🍎</div>
+      </button>
+      <button class="mcard" style="--a:#fbbf24;--b:#f97316;--d:#c2540a" onclick="startHitung()">
+        <div class="top"><div class="ico">❓</div><span class="pill">Tebak jumlah</span></div>
+        <div><h3>2. Hitung Benda</h3><p>Berapa banyak hewan dan mainan di layar?</p></div>
+        <div class="em">🐱</div>
+      </button>
+      <button class="mcard" style="--a:#34d399;--b:#0d9488;--d:#0b6b62" onclick="startPopBalon()">
+        <div class="top"><div class="ico">🎯</div><span class="pill">Dengarkan suara</span></div>
+        <div><h3>3. Cari &amp; Pop Balon</h3><p>Dengarkan angka lalu pecahkan balonnya!</p></div>
+        <div class="em">🎈</div>
+      </button>
+      <button class="mcard" style="--a:#818cf8;--b:#9333ea;--d:#6b21a8" onclick="startUrutkan()">
+        <div class="top"><div class="ico">➡️</div><span class="pill">Logika</span></div>
+        <div><h3>4. Urutkan Angka</h3><p>Susun angka dari yang terkecil ke terbesar!</p></div>
+        <div class="em">🔢</div>
+      </button>
+      <button class="mcard" style="--a:#e879f9;--b:#f43f5e;--d:#a21c43" onclick="openStickerBook()">
+        <div class="top"><div class="ico">🎁</div><span class="pill">Koleksi hadiah</span></div>
+        <div><h3>5. Album Stiker</h3><p>Tukarkan bintangmu dengan stiker lucu!</p></div>
+        <div class="em">🦄</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- BELAJAR -->
+  <section id="screen-belajar" class="screen">
+    <div class="panel" style="--bd:#fcd34d">
+      <div class="row">
+        <span class="tag">Sentuh buah satu per satu 👇</span>
+        <button class="chip" onclick="speakCurrentNumber()">🔊 Ulang Suara</button>
+      </div>
+      <div class="numrow">
+        <div id="belajar-number-box" class="numtile" onclick="speakCurrentNumber()">1</div>
+        <div>
+          <h2 id="belajar-number-word" class="bigword">Satu</h2>
+          <p id="belajar-hint" class="hint"></p>
+        </div>
+      </div>
+      <div id="belajar-objects-container" class="objbox"></div>
+      <div class="navrow">
+        <button id="btn-prev-num" class="navbtn sky" onclick="changeBelajarNumber(-1)">⬅ Sebelumnya</button>
+        <div id="belajar-dots" class="dots"></div>
+        <button id="btn-next-num" class="navbtn mint" onclick="changeBelajarNumber(1)">Lanjut ➡</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HITUNG -->
+  <section id="screen-hitung" class="screen">
+    <div class="panel" style="--bd:#fdba74">
+      <div class="row">
+        <span class="tag">Soal Hitung Benda</span>
+        <span id="hitung-score-badge" class="hint">Tebak dengan benar!</span>
+      </div>
+      <h2 class="q">Berapa jumlah <span id="hitung-object-name" style="color:#ea580c;text-decoration:underline wavy #fdba74">objek</span> di bawah ini?</h2>
+      <div id="hitung-objects-box" class="itembox"></div>
+      <div id="hitung-options-container" class="opts"></div>
+    </div>
+  </section>
+
+  <!-- POP BALON -->
+  <section id="screen-pop" class="screen">
+    <div class="panel" style="--bd:#6ee7b7">
+      <div class="row">
+        <span class="tag" style="--tagbg:#d1fae5;--tagfg:#065f46">Dengar &amp; pecahkan</span>
+        <button class="chip" style="--chipbg:#10b981;--chipfg:#fff" onclick="speakTargetBalloonNumber()">🔊 Dengarkan Suara</button>
+      </div>
+      <div>
+        <h2 class="q">Pecahkan balon dengan angka:</h2>
+        <div id="pop-target-text" class="target">?</div>
+      </div>
+      <div id="balloons-grid" class="balloons"></div>
+    </div>
+  </section>
+
+  <!-- URUTKAN -->
+  <section id="screen-urutkan" class="screen">
+    <div class="panel" style="--bd:#a5b4fc">
+      <div>
+        <span class="tag" style="--tagbg:#e0e7ff;--tagfg:#3730a3">Susun angka</span>
+        <h2 class="q" style="margin-top:8px">Urutkan angka dari yang terkecil!</h2>
+        <p class="hint">Ketuk angka di bawah sesuai urutan yang benar</p>
+      </div>
+      <div id="urutkan-target-boxes" class="slots"></div>
+      <div id="urutkan-source-buttons" class="sources"></div>
+      <div><button class="navbtn gray" style="font-size:16px;padding:9px 20px" onclick="resetUrutkanGame()">🔄 Acak Ulang</button></div>
+    </div>
+  </section>
+
+  <!-- STIKER -->
+  <section id="screen-stiker" class="screen">
+    <div class="panel" style="--bd:#f0abfc">
+      <div>
+        <h2 class="q" style="font-size:clamp(26px,6.5vw,42px);color:#86198f">🎁 Album Stiker Hadiah</h2>
+        <p class="hint">Kumpulkan bintang dari permainan dan buka stiker-stiker lucu ini!</p>
+      </div>
+      <div id="stickers-grid" class="stickers"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal -->
+<div id="modal-success" class="modal" role="dialog" aria-modal="true">
+  <div class="mbox">
+    <div class="big">🎉</div>
+    <h3 id="modal-title">Hebat Sekali!</h3>
+    <p id="modal-msg">Kamu berhasil menyelesaikan soal ini!</p>
+    <div class="plus"><span>⭐</span><span>+1 Bintang</span></div>
+    <button class="go" onclick="closeModalAndNext()">Lanjut Bermain 🚀</button>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<footer>Dunia Angka Ajaib &copy; 2026 • Belajar Angka Jadi Menyenangkan ✨</footer>
+
+<script>
+/* ===================== DATA ===================== */
+const NUMBER_DATA = [
+  { num: 1,  word: "Satu",     emoji: "🍎", name: "apel" },
+  { num: 2,  word: "Dua",      emoji: "🚗", name: "mobil" },
+  { num: 3,  word: "Tiga",     emoji: "⭐", name: "bintang" },
+  { num: 4,  word: "Empat",    emoji: "🐱", name: "kucing" },
+  { num: 5,  word: "Lima",     emoji: "🎈", name: "balon" },
+  { num: 6,  word: "Enam",     emoji: "🍦", name: "es krim" },
+  { num: 7,  word: "Tujuh",    emoji: "🐥", name: "anak ayam" },
+  { num: 8,  word: "Delapan",  emoji: "🍕", name: "piza" },
+  { num: 9,  word: "Sembilan", emoji: "🎁", name: "kado" },
+  { num: 10, word: "Sepuluh",  emoji: "🌺", name: "bunga" }
+];
+
+/* benda untuk game "Hitung Benda" (dipilih acak, tidak terikat ke angka) */
+const OBJECTS = [
+  {emoji:"🍎",name:"apel"},{emoji:"🚗",name:"mobil"},{emoji:"⭐",name:"bintang"},{emoji:"🐱",name:"kucing"},
+  {emoji:"🎈",name:"balon"},{emoji:"🍦",name:"es krim"},{emoji:"🐥",name:"anak ayam"},{emoji:"🍕",name:"piza"},
+  {emoji:"🎁",name:"kado"},{emoji:"🌺",name:"bunga"},{emoji:"🐟",name:"ikan"},{emoji:"🦋",name:"kupu-kupu"},
+  {emoji:"🍌",name:"pisang"},{emoji:"🐶",name:"anjing"},{emoji:"⚽",name:"bola"},{emoji:"🍓",name:"stroberi"}
+];
+
+const STICKERS = [
+  { id:'s1', emoji:'🐶', name:'Anjing Lucu',        cost:2 },
+  { id:'s2', emoji:'🦄', name:'Kuda Poni',          cost:4 },
+  { id:'s3', emoji:'🚀', name:'Roket Luar Angkasa', cost:6 },
+  { id:'s4', emoji:'🦁', name:'Raja Hutan',         cost:8 },
+  { id:'s5', emoji:'🤖', name:'Robot Pintar',       cost:10 },
+  { id:'s6', emoji:'👑', name:'Mahkota Emas',       cost:12 },
+  { id:'s7', emoji:'🌈', name:'Pelangi Indah',      cost:15 },
+  { id:'s8', emoji:'🦖', name:'Dinosaurus',         cost:20 }
+];
+
+const BALLOON_COLORS = [
+  ["#ff9aa8","#f43f5e"], ["#8fd3ff","#3b82f6"], ["#86efac","#10b981"], ["#ffd86b","#f59e0b"],
+  ["#d8b4fe","#9333ea"], ["#fdba74","#ea580c"]
+];
+
+/* ===================== STATE & UTIL ===================== */
+const state = {
+  stars: 0, soundEnabled: true, currentBelajarNum: 1,
+  hitungCurrentTarget: 0, hitungLastObject: -1,
+  popTargetNum: 0, urutkanTargetArray: [], urutkanCurrentInput: [], urutkanSource: [],
+  unlockedStickers: []
+};
+const $ = id => document.getElementById(id);
+const rand = n => Math.floor(Math.random() * n);
+function shuffled(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; }
+function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function restart(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ===================== SUARA ===================== */
+let _ac = null;
+function audio(){
+  if(!_ac){ const C = window.AudioContext || window.webkitAudioContext; if(C) _ac = new C(); }
+  if(_ac && _ac.state === 'suspended') _ac.resume();
+  return _ac;
+}
+function tone(a, type, freqs, dur, vol){
+  const osc=a.createOscillator(), gain=a.createGain(), t=a.currentTime;
+  osc.type=type; osc.connect(gain); gain.connect(a.destination);
+  freqs.forEach(([f,at,ramp])=>{ ramp ? osc.frequency.exponentialRampToValueAtTime(f,t+at) : osc.frequency.setValueAtTime(f,t+at); });
+  gain.gain.setValueAtTime(vol,t); gain.gain.exponentialRampToValueAtTime(0.01,t+dur);
+  osc.start(t); osc.stop(t+dur);
+}
+function playSoundEffect(type){
+  if(!state.soundEnabled) return;
+  try{
+    const a=audio(); if(!a) return;
+    if(type==='click') tone(a,'sine',[[400,0],[800,.08,true]],.1,.25);
+    if(type==='pop')   tone(a,'sine',[[800,0],[200,.07,true]],.08,.4);
+    if(type==='correct') tone(a,'triangle',[[523.25,0],[659.25,.1],[783.99,.2],[1046.5,.3]],.55,.35);
+    if(type==='wrong') tone(a,'sawtooth',[[220,0],[180,.15]],.3,.22);
+  }catch(e){}
+}
+function speakText(text){
+  if(!state.soundEnabled || !('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text));
+    u.lang='id-ID'; u.rate=.9; u.pitch=1.2;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ===================== NAVIGASI ===================== */
+const SCREENS=['screen-menu','screen-belajar','screen-hitung','screen-pop','screen-urutkan','screen-stiker'];
+function showScreen(id){
+  playSoundEffect('click');
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  SCREENS.forEach(s=>$(s).classList.remove('active'));
+  $(id).classList.add('active');
+  $('btn-home').classList.toggle('hidden', id==='screen-menu');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleSound(){
+  state.soundEnabled=!state.soundEnabled;
+  $('sound-icon').textContent = state.soundEnabled ? '🔊' : '🔇';
+  if(state.soundEnabled){ playSoundEffect('click'); speakText('Suara dinyalakan'); }
+  else { try{ window.speechSynthesis.cancel(); }catch(e){} }
+}
+function addStars(n){
+  state.stars+=n; $('star-count').textContent=state.stars; store('dunia_angka_stars',state.stars);
+  restart($('stars-pill'),'bump');
+}
+
+/* ===================== EFEK ===================== */
+function burst(el, list){
+  const r=el.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+  for(let i=0;i<12;i++){
+    const s=document.createElement('span'); s.className='fx'; s.textContent=list[i%list.length];
+    const ang=(Math.PI*2*i)/12+Math.random()*.4, d=60+Math.random()*70;
+    s.style.left=cx+'px'; s.style.top=cy+'px';
+    s.style.setProperty('--dx',Math.cos(ang)*d+'px'); s.style.setProperty('--dy',Math.sin(ang)*d+'px');
+    document.body.appendChild(s); setTimeout(()=>s.remove(),900);
+  }
+}
+
+let confettiRAF=null;
+function triggerConfetti(){
+  const canvas=$('confetti'), ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  cancelAnimationFrame(confettiRAF);
+  const colors=['#f43f5e','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#3b82f6'];
+  const parts=Array.from({length:90},()=>({
+    x:canvas.width/2, y:canvas.height*.45,
+    vx:(Math.random()-.5)*16, vy:(Math.random()-.8)*17,
+    size:Math.random()*10+7, color:colors[rand(colors.length)], shape:rand(3),
+    rot:Math.random()*360, vr:(Math.random()-.5)*12
+  }));
+  function star(c,r){
+    c.beginPath();
+    for(let i=0;i<10;i++){ const a=Math.PI/5*i-Math.PI/2, rr=i%2?r*.45:r; c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr); }
+    c.closePath(); c.fill();
+  }
+  function frame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    parts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.vy+=.35; p.vx*=.99; p.rot+=p.vr;
+      if(p.y<canvas.height+30) alive=true;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle=p.color;
+      if(p.shape===0) ctx.fillRect(-p.size/2,-p.size/3,p.size,p.size*.66);
+      else if(p.shape===1){ ctx.beginPath(); ctx.arc(0,0,p.size/2,0,7); ctx.fill(); }
+      else star(ctx,p.size*.8);
+      ctx.restore();
+    });
+    if(alive) confettiRAF=requestAnimationFrame(frame); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  frame();
+}
+
+/* ===================== MODAL ===================== */
+let onModalNext=null;
+function showSuccessModal(title,msg,onNext){
+  addStars(1);
+  $('modal-title').textContent=title; $('modal-msg').textContent=msg;
+  $('modal-success').classList.add('show'); onModalNext=onNext;
+  speakText(`${title}. ${msg}`);
+}
+function closeModalAndNext(){
+  playSoundEffect('click');
+  $('modal-success').classList.remove('show');
+  if(onModalNext){ const f=onModalNext; onModalNext=null; f(); }
+}
+
+/* ===================== 1. BELAJAR ANGKA ===================== */
+function startBelajar(){ showScreen('screen-belajar'); state.currentBelajarNum=1; renderBelajarScreen(); }
+
+function renderBelajarScreen(){
+  const data=NUMBER_DATA[state.currentBelajarNum-1];
+  const box=$('belajar-number-box'); box.textContent=data.num; restart(box,'numtile');
+  $('belajar-number-word').textContent=data.word;
+  $('belajar-hint').textContent=`Ada ${data.num} ${data.name}. Ketuk satu per satu untuk menghitung!`;
+
+  const container=$('belajar-objects-container'); container.innerHTML='';
+  let counted=0;
+  for(let i=0;i<data.num;i++){
+    const item=document.createElement('button');
+    item.className='fruit'; item.style.animationDelay=`${i*.08}s`;
+    item.setAttribute('aria-label',`${data.name} ${i+1}`);
+    item.innerHTML=`<span class="f" style="animation-delay:${-i*.3}s">${data.emoji}</span><span class="badge"></span>`;
+    item.onclick=()=>{
+      if(item.classList.contains('counted')){ restart(item,'wiggle'); playSoundEffect('click'); return; }
+      counted++;
+      item.classList.add('counted'); item.querySelector('.badge').textContent=counted;
+      playSoundEffect('pop'); speakText(counted);
+      burst(item,['✨']);
+      if(counted===data.num){
+        setTimeout(()=>{ speakText(`Jadi ada ${data.word} ${data.name}`); burst(box,['⭐','✨','🎉']); },700);
+      }
+    };
+    container.appendChild(item);
+  }
+
+  $('btn-prev-num').disabled = state.currentBelajarNum===1;
+  $('btn-next-num').disabled = state.currentBelajarNum===10;
+
+  const dots=$('belajar-dots'); dots.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const d=document.createElement('button');
+    d.className='dotb'+(i===state.currentBelajarNum?' on':''); d.textContent=i;
+    d.onclick=()=>{ state.currentBelajarNum=i; renderBelajarScreen(); };
+    dots.appendChild(d);
+  }
+  speakCurrentNumber();
+}
+function speakCurrentNumber(){
+  const d=NUMBER_DATA[state.currentBelajarNum-1];
+  speakText(`${d.num}. ${d.word}`);
+}
+function changeBelajarNumber(delta){
+  const n=state.currentBelajarNum+delta;
+  if(n>=1&&n<=10){ state.currentBelajarNum=n; playSoundEffect('click'); renderBelajarScreen(); }
+}
+
+/* ===================== 2. HITUNG BENDA ===================== */
+function startHitung(){ showScreen('screen-hitung'); state.hitungCurrentTarget=0; nextHitungQuestion(); }
+
+function nextHitungQuestion(){
+  let n; do{ n=1+rand(10); }while(n===state.hitungCurrentTarget);
+  state.hitungCurrentTarget=n;
+  let oi; do{ oi=rand(OBJECTS.length); }while(oi===state.hitungLastObject);
+  state.hitungLastObject=oi;
+  const obj=OBJECTS[oi];
+
+  $('hitung-object-name').textContent=obj.name;
+  const box=$('hitung-objects-box'); box.innerHTML='';
+  for(let i=0;i<n;i++){
+    const it=document.createElement('div'); it.className='item'; it.style.animationDelay=`${i*.09}s`;
+    it.innerHTML=`<span style="animation-delay:${-i*.25}s">${obj.emoji}</span>`;
+    box.appendChild(it);
+  }
+
+  /* pilihan: 1 benar + 2 pengecoh dekat angka benar */
+  let pool=[n-2,n-1,n+1,n+2].filter(x=>x>=1&&x<=10);
+  let choices=[n, ...shuffled(pool).slice(0,2)];
+  while(choices.length<3){ const w=1+rand(10); if(!choices.includes(w)) choices.push(w); }
+  choices=shuffled(choices);
+
+  const oc=$('hitung-options-container'); oc.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button'); b.className='opt'; b.textContent=c;
+    b.onclick=()=>checkHitungAnswer(c,b);
+    oc.appendChild(b);
+  });
+  speakText(`Berapa banyak ${obj.name} yang ada?`);
+}
+function checkHitungAnswer(selected,btn){
+  if(selected===state.hitungCurrentTarget){
+    btn.classList.add('right'); playSoundEffect('correct'); triggerConfetti();
+    const name=$('hitung-object-name').textContent;
+    setTimeout(()=>showSuccessModal('Hebat!',`Benar sekali! Ada ${state.hitungCurrentTarget} ${name}.`,nextHitungQuestion),450);
+  }else{
+    playSoundEffect('wrong'); restart(btn,'wrong'); speakText('Coba lagi ya!');
+  }
+}
+
+/* ===================== 3. POP BALON ===================== */
+function balloonSVG(num,c1,c2,uid){
+  return `<svg viewBox="0 0 100 135" aria-hidden="true"><defs>
+    <radialGradient id="bg${uid}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></radialGradient></defs>
+    <path d="M50 4 C20 4 6 30 10 58 C14 84 36 98 50 102 C64 98 86 84 90 58 C94 30 80 4 50 4 Z" fill="url(#bg${uid})"/>
+    <path d="M43 101 L57 101 L52 111 L48 111 Z" fill="${c2}"/>
+    <path d="M50 111 C41 120 59 126 50 134" stroke="#94a3b8" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="31" cy="30" rx="8" ry="15" fill="#fff" opacity=".5" transform="rotate(25 31 30)"/>
+    <text x="50" y="56" text-anchor="middle" dominant-baseline="central" font-family="Fredoka,sans-serif" font-weight="700" font-size="42"
+      fill="#fff" stroke="rgba(0,0,0,.28)" stroke-width="2" paint-order="stroke">${num}</text></svg>`;
+}
+function startPopBalon(){ showScreen('screen-pop'); state.popTargetNum=0; nextPopQuestion(); }
+
+function nextPopQuestion(){
+  let t; do{ t=1+rand(10); }while(t===state.popTargetNum);
+  state.popTargetNum=t;
+  $('pop-target-text').textContent=t; restart($('pop-target-text'),'target');
+
+  let options=[t];
+  while(options.length<4){ const w=1+rand(10); if(!options.includes(w)) options.push(w); }
+  options=shuffled(options);
+  const cols=shuffled(BALLOON_COLORS);
+
+  const grid=$('balloons-grid'); grid.innerHTML='';
+  options.forEach((num,i)=>{
+    const b=document.createElement('button'); b.className='balloon';
+    b.setAttribute('aria-label',`Balon angka ${num}`);
+    b.style.animationDelay=`${-i*.7}s`;
+    b.innerHTML=balloonSVG(num,cols[i][0],cols[i][1],i);
+    b.onclick=()=>checkPopAnswer(num,b);
+    grid.appendChild(b);
+  });
+  speakTargetBalloonNumber();
+}
+function speakTargetBalloonNumber(){ speakText(`Cari dan pecahkan balon angka ${state.popTargetNum}`); }
+function checkPopAnswer(num,el){
+  if(num===state.popTargetNum){
+    playSoundEffect('pop'); burst(el,['💥','✨','⭐','🎉']);
+    el.classList.add('popped');
+    setTimeout(()=>{
+      playSoundEffect('correct'); triggerConfetti();
+      showSuccessModal('Pintar!',`Kamu menemukan angka ${state.popTargetNum}!`,nextPopQuestion);
+    },280);
+  }else{
+    playSoundEffect('wrong'); restart(el,'wrong'); speakText(`Itu angka ${num}. Cari angka ${state.popTargetNum}`);
+  }
+}
+
+/* ===================== 4. URUTKAN ANGKA ===================== */
+function startUrutkan(){ showScreen('screen-urutkan'); resetUrutkanGame(); }
+
+function resetUrutkanGame(){
+  const start=1+rand(7);                      /* 1..7 -> deret 4 angka, maksimal sampai 10 */
+  state.urutkanTargetArray=[start,start+1,start+2,start+3];
+  state.urutkanCurrentInput=[];
+  let s; do{ s=shuffled(state.urutkanTargetArray); }while(s.every((v,i)=>v===state.urutkanTargetArray[i]));
+  state.urutkanSource=s;
+  renderUrutkanGame();
+  speakText(`Urutkan angka dari yang terkecil mulai dari ${start}`);
+}
+function renderUrutkanGame(){
+  const slots=$('urutkan-target-boxes'); slots.innerHTML='';
+  state.urutkanTargetArray.forEach((_,i)=>{
+    const v=state.urutkanCurrentInput[i];
+    const d=document.createElement('div'); d.className='slot'+(v?' filled':''); d.textContent=v||'?';
+    slots.appendChild(d);
+  });
+  const src=$('urutkan-source-buttons'); src.innerHTML='';
+  state.urutkanSource.forEach((num,i)=>{
+    if(state.urutkanCurrentInput.includes(num)) return;
+    const b=document.createElement('button'); b.className='src'; b.textContent=num; b.style.animationDelay=`${i*.05}s`;
+    b.onclick=()=>selectUrutkanNum(num,b);
+    src.appendChild(b);
+  });
+}
+function selectUrutkanNum(num,btn){
+  const expected=state.urutkanTargetArray[state.urutkanCurrentInput.length];
+  if(num===expected){
+    playSoundEffect('click'); speakText(num);
+    state.urutkanCurrentInput.push(num);
+    renderUrutkanGame();
+    if(state.urutkanCurrentInput.length===state.urutkanTargetArray.length){
+      setTimeout(()=>{
+        playSoundEffect('correct'); triggerConfetti();
+        showSuccessModal('Luar Biasa!','Urutan angkamu sudah benar sempurna!',resetUrutkanGame);
+      },350);
+    }
+  }else{
+    playSoundEffect('wrong'); restart(btn,'wrong'); speakText('Urutannya kurang tepat, coba lagi ya!');
+  }
+}
+
+/* ===================== 5. ALBUM STIKER ===================== */
+function openStickerBook(){ showScreen('screen-stiker'); renderStickerBook(); }
+
+function renderStickerBook(){
+  const grid=$('stickers-grid'); grid.innerHTML='';
+  STICKERS.forEach(st=>{
+    const own=state.unlockedStickers.includes(st.id), can=state.stars>=st.cost;
+    const card=document.createElement('div'); card.className='sticker'+(own?' own':'');
+    card.innerHTML=`<div class="e">${st.emoji}</div><div class="n">${st.name}</div><div class="c">${own?'Milikmu':`Butuh ${st.cost} ⭐`}</div>`;
+    if(own){
+      const t=document.createElement('span'); t.className='own-tag'; t.textContent='Terbuka ✨'; card.appendChild(t);
+    }else{
+      const b=document.createElement('button'); b.className='buy'; b.disabled=!can;
+      b.textContent=can?'Tukar Bintang':'Bintang Kurang'; b.onclick=()=>unlockSticker(st,card);
+      card.appendChild(b);
+    }
+    grid.appendChild(card);
+  });
+}
+function unlockSticker(st,card){
+  if(state.stars>=st.cost && !state.unlockedStickers.includes(st.id)){
+    state.stars-=st.cost; state.unlockedStickers.push(st.id);
+    store('dunia_angka_stars',state.stars); store('dunia_angka_stickers',JSON.stringify(state.unlockedStickers));
+    $('star-count').textContent=state.stars; restart($('stars-pill'),'bump');
+    playSoundEffect('correct'); triggerConfetti(); burst(card,['⭐','✨','🎉']);
+    speakText(`Selamat! Kamu mendapatkan stiker ${st.name}`);
+    renderStickerBook();
+  }
+}
+
+/* ===================== MULAI ===================== */
+(function init(){
+  const s=load('dunia_angka_stars'); if(s!==null) state.stars=parseInt(s,10)||0;
+  const k=load('dunia_angka_stickers');
+  if(k){ try{ state.unlockedStickers=JSON.parse(k)||[]; }catch(e){} }
+  $('star-count').textContent=state.stars;
+})();
+</script>
+<style>
+.gh-home{position:fixed;left:8px;bottom:8px;z-index:99999;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:42px;height:42px;padding:0 12px;border-radius:999px;
+  font:600 14px/1 "Fredoka","Trebuchet MS",system-ui,sans-serif;color:#3b2a6b;background:rgba(255,255,255,.94);text-decoration:none;
+  box-shadow:0 4px 0 #d9c9ff,0 6px 12px rgba(0,0,0,.14);-webkit-tap-highlight-color:transparent}
+.gh-home .gh-t{display:none}
+@media (min-width:760px){.gh-home{left:12px;bottom:12px;padding:0 16px}.gh-home .gh-t{display:inline}}
+.gh-home:active{transform:translateY(3px);box-shadow:0 1px 0 #d9c9ff}
+</style>
+<a class="gh-home" href="index.html" aria-label="Kembali ke menu utama" title="Menu Utama">🎮<span class="gh-t">Menu Utama</span></a>
+</body>
+</html>
